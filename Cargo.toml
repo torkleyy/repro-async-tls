@@ -1,0 +1,53 @@
+[package]
+name = "repro-async-tls"
+version = "0.1.0"
+authors = ["Thomas Schaller <me@torkleyy.com>"]
+edition = "2021"
+resolver = "2"
+rust-version = "1.66"
+
+[profile.release]
+opt-level = "s"
+
+[profile.dev]
+debug = true    # Symbols are nice and they don't increase the size on Flash
+opt-level = "z"
+
+[patch.crates-io]
+esp-idf-svc = { git = "https://github.com/esp-rs/esp-idf-svc" }
+esp-idf-hal = { git = "https://github.com/esp-rs/esp-idf-hal" }
+esp-idf-sys = { git = "https://github.com/esp-rs/esp-idf-sys" }
+async-io = { git = "https://github.com/smol-rs/async-io", branch = "notgull/polling-breaking-changes" }
+socket2 = { git = "https://github.com/rust-lang/socket2" }
+polling = { git = "https://github.com/smol-rs/polling", rev = "53793382a75eb45208afab60161c16b83b8d4810" }
+libc = { git = "https://github.com/rust-lang/libc" }
+
+[dependencies]
+anyhow = "1.0.75"
+async-io = "1.13"
+futures-lite = "1.13"
+log = { version = "0.4.17", default-features = false }
+esp-idf-sys = { version = "0.33", default-features = false }
+esp-idf-hal = { version = "0.41", optional = true, default-features = false }
+esp-idf-svc = { version = "0.46", optional = true, default-features = false }
+embedded-svc = { version = "0.25", optional = true, default-features = false }
+
+[build-dependencies]
+embuild = "0.31.2"
+
+[features]
+default = ["std", "hal", "esp-idf-sys/native"]
+hal = ["esp-idf-hal", "embedded-svc", "esp-idf-svc"]
+std = [
+    "alloc",
+    "esp-idf-sys/std",
+    "esp-idf-sys/binstart",
+    "embedded-svc?/std",
+    "esp-idf-hal?/std",
+    "esp-idf-svc?/std",
+]
+alloc = ["embedded-svc?/alloc", "esp-idf-hal?/alloc", "esp-idf-svc?/alloc"]
+
+[package.metadata.esp-idf-sys]
+esp_idf_tools_install_dir = "global"
+esp_idf_version = "v5.1.1"
